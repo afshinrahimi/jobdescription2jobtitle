@@ -7,6 +7,7 @@ Created on 1Oct.,2016
 import codecs, gensim, logging, string, re, operator, pdb
 from scipy import spatial
 from collections import OrderedDict
+import numpy as np
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
