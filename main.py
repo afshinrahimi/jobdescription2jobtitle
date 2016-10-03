@@ -12,8 +12,8 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 word2vec_model = None
 job_description = None
-word2vec_file = '/home/arahimi/datasets/alta2016/GoogleNews-vectors-negative300.bin.gz'
-occupation_file = '/home/arahimi/datasets/alta2016/Occupation Data.txt'
+word2vec_file = './resources/GoogleNews-vectors-negative300.bin.gz'
+occupation_file = './resources/Occupation Data.txt'
 regex = re.compile('[%s]' % re.escape(string.punctuation))
 
 def remove_punctuation(str):
