@@ -77,17 +77,39 @@ def get_job_dict_ordered(id_text1, id_text2, word2vec_model):
         id1_id2distances[id1] = sort_dic_by_value(id2_distances)
     return id1_id2distances
 
-def get_feature(text1, text2, jobtitle_jobdesc, word2vec_model):
-    vec1 = text2vec(text1, word2vec_model)
-    vec2 = text2vec(text2, word2vec_model)
+
+def get_features(text_pairs, jobtitle_jobdesc, word2vec_model):
+    '''given a list of text pairs as [('t11', 't12'), ('t21', 't22')....]
+    returns features, a vector where the first element is the job similarity of 't11', 't12'.
+    The length of the features vector equals the length of the pairs.'''
     jobtitle_vec = idtext2vec(jobtitle_jobdesc, word2vec_model)
     jobtitles = sorted(set(jobtitle_vec.keys()))
+    features = []
+    for text_pair in text_pairs:
+        text1, text2 = text_pair
+        vec1 = text2vec(text1, word2vec_model)
+        vec2 = text2vec(text2, word2vec_model)
+        vec1distances = []
+        vec2distances = []
+        for jobtitle in jobtitles:
+            vec = jobtitle_vec[jobtitle]
+            distance1 = spatial.distance.cosine(vec1, vec)
+            distance2 = spatial.distance.cosine(vec2, vec)
+            vec1distances.append(distance1)
+            vec2distances.append(distance2)
+        jobsim = 1 - spatial.distance.cosine(np.asarray(vec1distances), np.asarray(vec2distances))
+        features.append(jobsim)
+    features = np.asarray(features)
+    return features
     
 if __name__ == '__main__':
     word2vec_model = load_word2vec(fname=word2vec_file)
     job_description = load_jobs(fname=occupation_file)
-    #job_vec = text2vec({job:job + ' ' + desc for job, desc in job_description.iteritems()}, word2vec_model)
-    text_job_distances = get_job_dict_ordered({1:'i am a computer programmer'}, {job:job + ' ' + desc for job, desc in job_description.iteritems()}, word2vec_model)
-    print(text_job_distances[1].keys()[0:30])
-    
+    #add job title to job description
+    job_description = {job:job + ' ' + desc for job, desc in job_description.iteritems()}
+    #just for sanity check
+    #text_job_distances = get_job_dict_ordered({1:'i am a computer programmer'}, job_description}, word2vec_model)
+    #print(text_job_distances[1].keys()[0:30])
+    text_pairs = [('programmer', 'developer'), ('manager', 'ceo'), ('chef', 'pilot'), ('aeroplane', 'pilon')]
+    features = get_features(text_pairs=text_pairs, jobtitle_jobdescription=job_description, word2vec_model=word2vec_model) 
     pdb.set_trace()
