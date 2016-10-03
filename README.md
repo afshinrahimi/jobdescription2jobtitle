@@ -34,6 +34,11 @@ Pre-trained word vectors
 download them from https://docs.google.com/uc?id=0B7XkCwpI5KDYNlNUTTlSS21pQmM&export=download.
 
 
+Job Title and Description
+-------------------------
+can be downloaded from ONET dataset here https://www.onetcenter.org/dl_files/database/db_21_0_text/Occupation%20Data.txt.
+
+
 
 
 Contact
