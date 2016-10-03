@@ -59,7 +59,10 @@ def text2vec(text, word2vec_model):
         if word in word2vec_model:
             num_words += 1
             vec += word2vec_model[word]
-    vec = vec / num_words
+    if num_words == 0:
+        vec = np.asarray([0] * 300)
+    else:
+        vec = vec / num_words
     return vec
 
 def sort_dic_by_value(dic):
