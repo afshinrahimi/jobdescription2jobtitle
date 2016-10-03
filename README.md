@@ -31,7 +31,8 @@ file should be downloaded and the path in the source changed accordingly.
 
 Pre-trained word vectors
 ------------------------
-download them from https://docs.google.com/uc?id=0B7XkCwpI5KDYNlNUTTlSS21pQmM&export=download.
+download it from https://docs.google.com/uc?id=0B7XkCwpI5KDYNlNUTTlSS21pQmM&export=download
+and move it into the resources directory.
 
 
 Job Title and Description
