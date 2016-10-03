@@ -29,6 +29,12 @@ when trying to decide if two pieces of text correspond to a single person or not
 To run the program gensim should be installed and the pre-trained Google word2vec
 file should be downloaded and the path in the source changed accordingly.
 
+Pre-trained word vectors
+------------------------
+download them from https://docs.google.com/uc?id=0B7XkCwpI5KDYNlNUTTlSS21pQmM&export=download.
+
+
+
 
 Contact
 -------
