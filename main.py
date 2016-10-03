@@ -102,7 +102,7 @@ def get_features(text_pairs, jobtitle_jobdesc, word2vec_model):
             distance2 = spatial.distance.cosine(vec2, vec)
             vec1distances.append(distance1)
             vec2distances.append(distance2)
-        jobsim = 1 - spatial.distance.cosine(np.asarray(vec1distances), np.asarray(vec2distances))
+        jobsim = 1 - spatial.distance.cosine(vec1distances, vec2distances)
         features.append(jobsim)
     features = np.asarray(features)
     return features
