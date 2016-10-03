@@ -41,28 +41,33 @@ def load_jobs(fname):
             jobtitle_jobdescription[job_title] = _job_description
     return jobtitle_jobdescription
 
-def text2vec(id_text, word2vec_model):
-    '''convert a dictionary of text_id:text to text_id:vector by averaging the word vectors'''
+def idtext2vec(id_text, word2vec_model):
+    '''convert a dictionary of id:text to text_id:vector by averaging the word vectors'''
     id_vec = {}
     for id, text in id_text.iteritems():
-        words = text.split()
-        vec = 0
-        num_words = 0
-        for word in words:
-            if word in word2vec_model:
-                num_words += 1
-                vec += word2vec_model[word]
-        vec = vec / num_words
+        vec = text2vec(text, word2vec_model)
         id_vec[id] = vec
     return id_vec
+
+def text2vec(text, word2vec_model):
+    '''convert a text to a vector by averaging the word vectors'''
+    words = text.split()
+    vec = 0
+    num_words = 0
+    for word in words:
+        if word in word2vec_model:
+            num_words += 1
+            vec += word2vec_model[word]
+    vec = vec / num_words
+    return vec
 
 def sort_dic_by_value(dic):
     sorted_x = sorted(dic.items(), key=operator.itemgetter(1))
     return OrderedDict(sorted_x)
 
 def get_job_dict_ordered(id_text1, id_text2, word2vec_model):
-    id_vec1 = text2vec(id_text1, word2vec_model)
-    id_vec2 = text2vec(id_text2, word2vec_model)
+    id_vec1 = idtext2vec(id_text1, word2vec_model)
+    id_vec2 = idtext2vec(id_text2, word2vec_model)
     id1_id2distances = {}
     for id1, vec1 in id_vec1.iteritems():
         id2_distances = {}
@@ -72,8 +77,12 @@ def get_job_dict_ordered(id_text1, id_text2, word2vec_model):
         id1_id2distances[id1] = sort_dic_by_value(id2_distances)
     return id1_id2distances
 
-def get_job_vectors(id_text1, id_text2, word2vec_model):
-
+def get_feature(text1, text2, jobtitle_jobdesc, word2vec_model):
+    vec1 = text2vec(text1, word2vec_model)
+    vec2 = text2vec(text2, word2vec_model)
+    jobtitle_vec = idtext2vec(jobtitle_jobdesc, word2vec_model)
+    jobtitles = sorted(set(jobtitle_vec.keys()))
+    
 if __name__ == '__main__':
     word2vec_model = load_word2vec(fname=word2vec_file)
     job_description = load_jobs(fname=occupation_file)
