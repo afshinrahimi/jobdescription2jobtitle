@@ -52,6 +52,7 @@ def idtext2vec(id_text, word2vec_model):
 
 def text2vec(text, word2vec_model):
     '''convert a text to a vector by averaging the word vectors'''
+    text = text.lower()
     words = text.split()
     vec = 0
     num_words = 0
