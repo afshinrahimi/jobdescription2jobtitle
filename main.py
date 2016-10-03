@@ -114,6 +114,6 @@ if __name__ == '__main__':
     #just for sanity check
     #text_job_distances = get_job_dict_ordered({1:'i am a computer programmer'}, job_description}, word2vec_model)
     #print(text_job_distances[1].keys()[0:30])
-    text_pairs = [('programmer', 'developer'), ('manager', 'ceo'), ('chef', 'pilot'), ('aeroplane', 'pilon')]
+    text_pairs = [('programmer', 'developer'), ('manager', 'ceo'), ('chef', 'pilot'), ('aeroplane', 'pilot')]
     features = get_features(text_pairs=text_pairs, jobtitle_jobdesc=job_description, word2vec_model=word2vec_model) 
     pdb.set_trace()
