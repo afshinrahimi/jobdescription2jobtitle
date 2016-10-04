@@ -123,15 +123,11 @@ def get_features(text_pairs, jobtitle_jobdesc, word2vec_model):
 
 def normalize_features(train_features, test_features):
     ''' scale the feature values '''
-    scaler = preprocessing.StandardScaler()
-    #scaler = preprocessing.MinMaxScaler()
+    #scaler = preprocessing.StandardScaler()
+    scaler = preprocessing.MinMaxScaler()
     scaler.fit(train_features)
     normal_train = scaler.transform(train_features)
     test_features = scaler.transform(test_features)
-    if len(train_features.shape) == 1:
-        train_features = train_features.reshape(train_features.shape[0], 1)
-    if len(test_features.shape) == 1:
-        test_features = test_features.reshape(test_features.shape[0], 1)
     return train_features, test_features
 
 def import_train_test_data(train_file, test_file):
@@ -191,9 +187,11 @@ if __name__ == '__main__':
     test_features_job = get_features(text_pairs=[test_pairs[id] for id in sorted(test_pairs.keys())], jobtitle_jobdesc=job_description, word2vec_model=word2vec_model)
     train_features_txtsim = textsimilarity(text_pairs=[train_pairs[id] for id in sorted(train_pairs.keys())], word2vec_model=word2vec_model)
     test_features_txtsim = textsimilarity(text_pairs=[test_pairs[id] for id in sorted(test_pairs.keys())], word2vec_model=word2vec_model)
-    test_features = np.hstack((test_features_job, test_features_txtsim))
     train_features = np.hstack((train_features_job, train_features_txtsim))
-    train_features, test_features = normalize_features(train_features=train_features, test_features=test_features)
-    features = np.vstack((train_features, test_featurs))
+    test_features = np.hstack((test_features_job, test_features_txtsim))
+    train_features = preprocessing.scale(train_features)
+    test_features = preprocessing.scale(test_features)
+    #train_features, test_features = normalize_features(train_features=train_features, test_features=test_features)
+    features = np.vstack((train_features, test_features))
     np.savetxt('./resources/features.txt', features)
     pdb.set_trace()
