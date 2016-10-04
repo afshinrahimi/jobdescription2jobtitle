@@ -76,7 +76,7 @@ def textsimilarity(text_pairs, word2vec_model):
         vec2 = text2vec(text2, word2vec_model)
         similarity = 1 - spatial.distance.cosine(vec1, vec2)
         text_similarity_features.append(similarity)
-    features = np.asarray(text_similarity_features)
+    features = np.asarray(text_similarity_features).reshape(len(text_similarity_features), 1)
     return features
         
 
@@ -118,7 +118,7 @@ def get_features(text_pairs, jobtitle_jobdesc, word2vec_model):
             vec2distances.append(distance2)
         jobsim = 1 - spatial.distance.cosine(vec1distances, vec2distances)
         features.append(jobsim)
-    features = np.asarray(features)
+    features = np.asarray(features).reshape(len(features), 1)
     return features
 
 def normalize_features(train_features, test_features):
@@ -128,6 +128,10 @@ def normalize_features(train_features, test_features):
     scaler.fit(train_features)
     normal_train = scaler.transform(train_features)
     test_features = scaler.transform(test_features)
+    if len(train_features.shape) == 1:
+        train_features = train_features.reshape(train_features.shape[0], 1)
+    if len(test_features.shape) == 1:
+        test_features = test_features.reshape(test_features.shape[0], 1)
     return train_features, test_features
 
 def import_train_test_data(train_file, test_file):
@@ -185,13 +189,11 @@ if __name__ == '__main__':
     word2vec_model = load_word2vec(fname=word2vec_file)
     train_features_job = get_features(text_pairs=[train_pairs[id] for id in sorted(train_pairs.keys())], jobtitle_jobdesc=job_description, word2vec_model=word2vec_model) 
     test_features_job = get_features(text_pairs=[test_pairs[id] for id in sorted(test_pairs.keys())], jobtitle_jobdesc=job_description, word2vec_model=word2vec_model)
-    train_features_job, test_features_job = normalize_features(train_features_job, test_features_job)
     train_features_txtsim = textsimilarity(text_pairs=[train_pairs[id] for id in sorted(train_pairs.keys())], word2vec_model=word2vec_model)
     test_features_txtsim = textsimilarity(text_pairs=[test_pairs[id] for id in sorted(test_pairs.keys())], word2vec_model=word2vec_model)
-    train_features_txtsim, test_features_txtsim = normalize_features(train_features=train_features_txtsim, test_features=test_features_txtsim)
-    test_featurs = np.vstack((test_features_job, test_features_txtsim))
-    train_features = np.vstack((train_features_job, train_features_txtsim))
-    features = np.hstack((train_features, test_featurs))
+    test_features = np.hstack((test_features_job, test_features_txtsim))
+    train_features = np.hstack((train_features_job, train_features_txtsim))
+    train_features, test_features = normalize_features(train_features=train_features, test_features=test_features)
+    features = np.vstack((train_features, test_featurs))
     np.savetxt('./resources/features.txt', features)
-    np.vstack((train_features_job, train_features_txtsim))
     pdb.set_trace()
