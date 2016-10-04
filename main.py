@@ -8,6 +8,8 @@ import codecs, gensim, logging, string, re, operator, pdb
 from scipy import spatial
 from collections import OrderedDict
 import numpy as np
+from sklearn import preprocessing
+import csv
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
@@ -66,6 +68,18 @@ def text2vec(text, word2vec_model):
         vec = vec / num_words
     return vec
 
+def textsimilarity(text_pairs, word2vec_model):
+    text_similarity_features = []
+    for text_pair in text_pairs:
+        text1, text2 = text_pair
+        vec1 = text2vec(text1, word2vec_model)
+        vec2 = text2vec(text2, word2vec_model)
+        similarity = 1 - spatial.distance.cosine(vec1, vec2)
+        text_similarity_features.append(similarity)
+    features = np.asarray(text_similarity_features)
+    return features
+        
+
 def sort_dic_by_value(dic):
     sorted_x = sorted(dic.items(), key=operator.itemgetter(1))
     return OrderedDict(sorted_x)
@@ -106,15 +120,78 @@ def get_features(text_pairs, jobtitle_jobdesc, word2vec_model):
         features.append(jobsim)
     features = np.asarray(features)
     return features
+
+def normalize_features(train_features, test_features):
+    ''' scale the feature values '''
+    scaler = preprocessing.StandardScaler()
+    #scaler = preprocessing.MinMaxScaler()
+    scaler.fit(train_features)
+    normal_train = scaler.transform(train_features)
+    test_features = scaler.transform(test_features)
+    return train_features, test_features
+
+def import_train_test_data(train_file, test_file):
+    #['Id', 'AUrl', 'ATitle', 'ASnippet', 'BUrl', 'BTitle', 'BSnippet']
+    train_pairs = {}
+    test_pairs = {}
+    #load train file
+    with open(train_file, 'rb') as fin:
+        reader = csv.reader(fin, delimiter=',', quotechar='"')
+        header = True
+        for row in reader:
+            if header:
+                header = False
+                continue
+            pair_id = int(row[0])
+            title1 = row[2]
+            title2 = row[5]
+            text1 = row[3]
+            text2 = row[6]
+            train_pairs[pair_id] = (title1 + ' ' + text1 , title2 + ' ' + text2)
+    #load test file
+    with open(test_file, 'rb') as fin:
+        reader = csv.reader(fin, delimiter=',', quotechar='"')
+        header = True
+        for row in reader:
+            if header:
+                header = False
+                continue
+            pair_id = int(row[0])
+            title1 = row[2]
+            title2 = row[5]
+            text1 = row[3]
+            text2 = row[6]
+            test_pairs[pair_id] = (title1 + ' ' + text1 , title2 + ' ' + text2)
+    
+            
+    return train_pairs, test_pairs
+
+def sanity_check(word2vec_model, job_description):
+    #just for sanity check
+    text_job_distances = get_job_dict_ordered({1:'i am a computer programmer'}, job_description, word2vec_model)
+    print(text_job_distances[1].keys()[0:30])    
+
+def write_features(feature_file, features):
+    np.savetxt(feature_file, features)
     
 if __name__ == '__main__':
-    word2vec_model = load_word2vec(fname=word2vec_file)
+    logging.info('loading train and test search results...')
+    train_pairs, test_pairs = import_train_test_data(train_file='./resources/alta16_kbcoref_train_search_results.csv', test_file='./resources/alta16_kbcoref_test_search_results.csv')
+    logging.info('loading job descriptions...')
     job_description = load_jobs(fname=occupation_file)
     #add job title to job description
     job_description = {job:job + ' ' + desc for job, desc in job_description.iteritems()}
-    #just for sanity check
-    #text_job_distances = get_job_dict_ordered({1:'i am a computer programmer'}, job_description}, word2vec_model)
-    #print(text_job_distances[1].keys()[0:30])
-    text_pairs = [('programmer', 'developer'), ('manager', 'ceo'), ('chef', 'pilot'), ('airplane', 'pilot')]
-    features = get_features(text_pairs=text_pairs, jobtitle_jobdesc=job_description, word2vec_model=word2vec_model) 
+    logging.info('loading word2vec model (takes a while)...')
+    word2vec_model = load_word2vec(fname=word2vec_file)
+    train_features_job = get_features(text_pairs=[train_pairs[id] for id in sorted(train_pairs.keys())], jobtitle_jobdesc=job_description, word2vec_model=word2vec_model) 
+    test_features_job = get_features(text_pairs=[test_pairs[id] for id in sorted(test_pairs.keys())], jobtitle_jobdesc=job_description, word2vec_model=word2vec_model)
+    train_features_job, test_features_job = normalize_features(train_features_job, test_features_job)
+    train_features_txtsim = textsimilarity(text_pairs=[train_pairs[id] for id in sorted(train_pairs.keys())], word2vec_model=word2vec_model)
+    test_features_txtsim = textsimilarity(text_pairs=[test_pairs[id] for id in sorted(test_pairs.keys())], word2vec_model=word2vec_model)
+    train_features_txtsim, test_features_txtsim = normalize_features(train_features=train_features_txtsim, test_features=test_features_txtsim)
+    test_featurs = np.vstack((test_features_job, test_features_txtsim))
+    train_features = np.vstack((train_features_job, train_features_txtsim))
+    features = np.hstack((train_features, test_featurs))
+    np.savetxt('./resources/features.txt', features)
+    np.vstack((train_features_job, train_features_txtsim))
     pdb.set_trace()
