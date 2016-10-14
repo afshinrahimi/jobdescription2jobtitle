@@ -131,6 +131,7 @@ def normalize_features(train_features, test_features):
     return train_features, test_features
 
 def import_train_test_data(train_file, test_file):
+    html_dir='./resources/html_clean/'
     #['Id', 'AUrl', 'ATitle', 'ASnippet', 'BUrl', 'BTitle', 'BSnippet']
     train_pairs = {}
     test_pairs = {}
@@ -143,11 +144,22 @@ def import_train_test_data(train_file, test_file):
                 header = False
                 continue
             pair_id = int(row[0])
-            title1 = row[2]
-            title2 = row[5]
-            text1 = row[3]
-            text2 = row[6]
-            train_pairs[pair_id] = (title1 + ' ' + text1 , title2 + ' ' + text2)
+            html_1 = html_dir + str(pair_id) + '_A.clean'
+            html_2 = html_dir + str(pair_id) + '_B.clean'
+            htmltext1 = ''
+            htmltext2 = ''
+            with codecs.open(html_1, 'r', encoding='utf-8') as fin:
+                htmltext1 = fin.read()
+                htmltext1 = htmltext1.decode(encoding='utf-8')
+            with codecs.open(html_2, 'r', encoding='utf-8') as fin:
+                htmltext2 = fin.read()
+                htmltext2 = htmltext2.decode(encoding='utf-8')
+            title1 = row[2].decode(encoding='utf-8')
+            title2 = row[5].decode(encoding='utf-8')
+            text1 = row[3].decode(encoding='utf-8')
+            text2 = row[6].decode(encoding='utf-8')
+            train_pairs[pair_id] = (title1 + ' ' + text1 + ' ' + htmltext1 , title2 + ' ' + text2 + ' ' + htmltext2)
+
     #load test file
     with open(test_file, 'rb') as fin:
         reader = csv.reader(fin, delimiter=',', quotechar='"')
